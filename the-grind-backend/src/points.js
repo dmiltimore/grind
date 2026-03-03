@@ -85,4 +85,40 @@ async function getLeaderboard() {
     .map((user, index) => ({ ...user, rank: index + 1 }))
 }
 
-module.exports = { getWeeklyStatsForUser, getLeaderboard, getWeekStart }
+async function runWeeklyReset() {
+  console.log('Running weekly reset...')
+
+  const leaderboard = await getLeaderboard()
+  if (leaderboard.length === 0) {
+    console.log('No users to reset.')
+    return
+  }
+
+  const weekStart = getWeekStart()
+
+  // Write final scores to weekly_leaderboards
+  const rows = leaderboard.map(user => ({
+    week_start: weekStart.toISOString().split('T')[0],
+    user_id: user.userId,
+    easy: user.easy,
+    medium: user.medium,
+    hard: user.hard,
+    points: user.points,
+    rank: user.rank
+  }))
+
+  const { error } = await supabase
+    .from('weekly_leaderboards')
+    .upsert(rows, { onConflict: 'week_start,user_id' })
+
+  if (error) {
+    console.error('Failed to write leaderboard:', error)
+    return
+  }
+
+  const winner = leaderboard[0]
+  console.log(`🏆 Week of ${weekStart.toISOString().split('T')[0]} winner: ${winner.username} with ${winner.points} points`)
+  console.log('Weekly reset complete.')
+}
+
+module.exports = { getWeeklyStatsForUser, getLeaderboard, getWeekStart, runWeeklyReset }

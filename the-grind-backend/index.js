@@ -1,22 +1,26 @@
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
+
+// ── Internal modules ──────────────────────────────────────────────
+const supabase = require('./src/supabase')
 const { syncUser } = require('./src/leetcode')
 const { syncAllUsers } = require('./src/cron')
-const supabase = require('./src/supabase')
+const { getLeaderboard, runWeeklyReset } = require('./src/points')
+const { searchUsers, sendFriendRequest, acceptFriendRequest, getFriends, getPendingRequests } = require('./src/friends')
 
 const app = express()
 
+// ── Middleware ────────────────────────────────────────────────────
 app.use(cors({ origin: 'http://localhost:5173' }))
 app.use(express.json())
 
+// ── Health ────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
-const { getLeaderboard } = require('./src/points')
-
-// Get the current weekly leaderboard
+// ── Leaderboard ───────────────────────────────────────────────────
 app.get('/leaderboard', async (req, res) => {
   try {
     const leaderboard = await getLeaderboard()
@@ -26,7 +30,7 @@ app.get('/leaderboard', async (req, res) => {
   }
 })
 
-// Manually trigger a sync for a single user
+// ── LeetCode Sync ─────────────────────────────────────────────────
 app.post('/sync/:userId', async (req, res) => {
   const { userId } = req.params
 
@@ -42,12 +46,72 @@ app.post('/sync/:userId', async (req, res) => {
   res.json({ success: true, stats })
 })
 
-// Manually trigger a sync for all users
 app.post('/sync-all', async (req, res) => {
   syncAllUsers()
   res.json({ message: 'Sync started' })
 })
 
+// ── Weekly Reset ──────────────────────────────────────────────────
+app.post('/reset', async (req, res) => {
+  try {
+    await runWeeklyReset()
+    res.json({ message: 'Weekly reset complete' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── Friends ───────────────────────────────────────────────────────
+app.get('/users/search', async (req, res) => {
+  try {
+    const { q } = req.query
+    if (!q) return res.status(400).json({ error: 'Query required' })
+    const users = await searchUsers(q)
+    res.json(users)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.post('/friends/request', async (req, res) => {
+  try {
+    const { userId, friendId } = req.body
+    const result = await sendFriendRequest(userId, friendId)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.post('/friends/accept', async (req, res) => {
+  try {
+    const { friendshipId, userId } = req.body
+    const result = await acceptFriendRequest(friendshipId, userId)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.get('/friends/:userId', async (req, res) => {
+  try {
+    const friends = await getFriends(req.params.userId)
+    res.json(friends)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.get('/friends/:userId/pending', async (req, res) => {
+  try {
+    const requests = await getPendingRequests(req.params.userId)
+    res.json(requests)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── Start Server ──────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
