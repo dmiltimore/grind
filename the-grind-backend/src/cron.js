@@ -1,11 +1,11 @@
 const cron = require('node-cron')
 const supabase = require('./supabase')
 const { syncUser } = require('./leetcode')
+const { runWeeklyReset } = require('./points')
 
 async function syncAllUsers() {
   console.log('Starting sync for all users...')
 
-  // Fetch every user who has a LeetCode username linked
   const { data: users, error } = await supabase
     .from('users')
     .select('id, leetcode_username')
@@ -18,7 +18,6 @@ async function syncAllUsers() {
 
   console.log(`Syncing ${users.length} users...`)
 
-  // Sync each user one at a time
   for (const user of users) {
     try {
       const stats = await syncUser(user.id, user.leetcode_username)
@@ -31,10 +30,14 @@ async function syncAllUsers() {
   console.log('Sync complete.')
 }
 
-// Run every 6 hours
+// Sync every 6 hours
 cron.schedule('0 */6 * * *', () => {
   syncAllUsers()
 })
 
-// Also export so we can trigger manually
+// Run weekly reset every Sunday at 11:59 PM
+cron.schedule('59 23 * * 0', () => {
+  runWeeklyReset()
+})
+
 module.exports = { syncAllUsers }
