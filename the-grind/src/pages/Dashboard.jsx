@@ -173,7 +173,6 @@ export default function Dashboard({ profile }) {
           </div>
         </div>
       )}
-      <FriendsWidget leaderboard={leaderboard} profileId={profile.id} />
     </div>
   )
 }
@@ -242,57 +241,6 @@ function LeaderboardRow({ user, isMe, isLast }) {
       <div style={{ fontFamily: 'DM Mono', fontSize: '0.85rem', color: '#ef4444', textAlign: 'center' }}>{user.hard}</div>
       <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.05rem', textAlign: 'right', color: isMe ? '#fc4c02' : '#e8eaed' }}>
         {user.points}
-      </div>
-    </div>
-  )
-}
-
-function FriendsWidget({ leaderboard, profileId }) {
-  const friends = leaderboard.filter(u => u.userId !== profileId)
-
-  if (friends.length === 0) return null
-
-  return (
-    <div style={{ marginTop: '28px' }}>
-      <div style={{ fontFamily: 'Syne', fontSize: '1.1rem', fontWeight: 700, marginBottom: '16px' }}>
-        Friends
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-        {friends.map(friend => (
-          <div key={friend.userId} style={{
-            background: '#16181c',
-            border: '1px solid #2a2d35',
-            borderRadius: '12px',
-            padding: '16px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #6366f1, #4da6ff)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '0.65rem', fontWeight: 700, flexShrink: 0,
-                fontFamily: 'Syne'
-              }}>
-                {friend.username?.slice(0, 2).toUpperCase()}
-              </div>
-              <div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 500 }}>{friend.username}</div>
-                <div style={{ fontFamily: 'DM Mono', fontSize: '0.65rem', color: '#6b7280' }}>Rank #{friend.rank}</div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <span style={{ fontFamily: 'DM Mono', fontSize: '0.7rem', color: '#3ddc84' }}>{friend.easy}E</span>
-                <span style={{ fontFamily: 'DM Mono', fontSize: '0.7rem', color: '#ffb347' }}>{friend.medium}M</span>
-                <span style={{ fontFamily: 'DM Mono', fontSize: '0.7rem', color: '#ef4444' }}>{friend.hard}H</span>
-              </div>
-              <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1rem', color: '#e8eaed' }}>
-                {friend.points} pts
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   )
