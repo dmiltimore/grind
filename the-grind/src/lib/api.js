@@ -5,8 +5,8 @@ const api = axios.create({
 })
 
 // ── Leaderboard ───────────────────────────────────────────────────
-export const getLeaderboard = () =>
-  api.get('/leaderboard').then(r => r.data)
+export const getLeaderboard = (userId) =>
+  api.get(`/leaderboard?userId=${userId}`).then(r => r.data)
 
 // ── LeetCode Sync ─────────────────────────────────────────────────
 export const syncUser = (userId) =>
