@@ -40,6 +40,7 @@ export default function Layout({ children, profile }) {
           letterSpacing: '0.1em'
         }}>
           Coming Soon
+        <div>
         <div style={{ padding: '9px 12px', color: '#4b5563', fontSize: '0.875rem' }}>💼 Job Board</div>
         <div style={{ padding: '9px 12px', color: '#4b5563', fontSize: '0.875rem' }}>🎤 Mock Interview</div>
         <div style={{ padding: '9px 12px', color: '#4b5563', fontSize: '0.875rem' }}>📄 Resume Workshop</div>
