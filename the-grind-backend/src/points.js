@@ -3,8 +3,8 @@ const supabase = require('./supabase')
 // Get the most recent Monday at midnight
 function getWeekStart() {
   const now = new Date()
-  const day = now.getDay() // 0 = Sunday, 1 = Monday, etc.
-  const diff = day === 0 ? 6 : day - 1 // days since Monday
+  const day = now.getDay()
+  const diff = day === 0 ? 6 : day - 1
   const monday = new Date(now)
   monday.setDate(now.getDate() - diff)
   monday.setHours(0, 0, 0, 0)
@@ -18,8 +18,6 @@ function calculatePoints(easy, medium, hard) {
 async function getWeeklyStatsForUser(userId) {
   const weekStart = getWeekStart()
 
-  // Get the most recent snapshot from before the week started
-  // This is the baseline — what they had at the start of the week
   const { data: baseline } = await supabase
     .from('lc_snapshots')
     .select('easy, medium, hard, total')
@@ -29,7 +27,6 @@ async function getWeeklyStatsForUser(userId) {
     .limit(1)
     .single()
 
-  // Get their most recent snapshot (current state)
   const { data: current } = await supabase
     .from('lc_snapshots')
     .select('easy, medium, hard, total')
@@ -40,7 +37,6 @@ async function getWeeklyStatsForUser(userId) {
 
   if (!current) return null
 
-  // If no baseline exists they just started this week
   const base = baseline || { easy: 0, medium: 0, hard: 0 }
 
   const weeklyEasy = Math.max(0, current.easy - base.easy)
@@ -48,24 +44,33 @@ async function getWeeklyStatsForUser(userId) {
   const weeklyHard = Math.max(0, current.hard - base.hard)
   const points = calculatePoints(weeklyEasy, weeklyMedium, weeklyHard)
 
-  return {
-    easy: weeklyEasy,
-    medium: weeklyMedium,
-    hard: weeklyHard,
-    points
-  }
+  return { easy: weeklyEasy, medium: weeklyMedium, hard: weeklyHard, points }
 }
 
-async function getLeaderboard() {
-  // Get all users with a linked LeetCode account
-  const { data: users, error } = await supabase
+async function getLeaderboard(userId = null) {
+  let query = supabase
     .from('users')
     .select('id, username, leetcode_username')
     .not('leetcode_username', 'is', null)
 
+  if (userId) {
+    const { data: friendships } = await supabase
+      .from('friendships')
+      .select('user_id, friend_id')
+      .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
+      .eq('status', 'accepted')
+
+    const friendIds = friendships?.map(f =>
+      f.user_id === userId ? f.friend_id : f.user_id
+    ) || []
+
+    friendIds.push(userId)
+    query = query.in('id', friendIds)
+  }
+
+  const { data: users, error } = await query
   if (error) throw error
 
-  // Compute weekly stats for each user
   const results = await Promise.all(
     users.map(async user => {
       const stats = await getWeeklyStatsForUser(user.id)
@@ -78,7 +83,6 @@ async function getLeaderboard() {
     })
   )
 
-  // Sort by points descending
   return results
     .filter(r => r.points !== undefined)
     .sort((a, b) => b.points - a.points)
@@ -96,7 +100,6 @@ async function runWeeklyReset() {
 
   const weekStart = getWeekStart()
 
-  // Write final scores to weekly_leaderboards
   const rows = leaderboard.map(user => ({
     week_start: weekStart.toISOString().split('T')[0],
     user_id: user.userId,
