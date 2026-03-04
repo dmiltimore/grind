@@ -6,7 +6,7 @@ const cors = require('cors')
 const supabase = require('./src/supabase')
 const { syncUser } = require('./src/leetcode')
 const { syncAllUsers } = require('./src/cron')
-const { getLeaderboard, runWeeklyReset } = require('./src/points')
+const { getLeaderboard, runWeeklyReset, getActivityFeed } = require('./src/points')
 const { searchUsers, sendFriendRequest, acceptFriendRequest, getFriends, getPendingRequests } = require('./src/friends')
 
 const app = express()
@@ -106,6 +106,15 @@ app.get('/friends/:userId/pending', async (req, res) => {
   try {
     const requests = await getPendingRequests(req.params.userId)
     res.json(requests)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.get('/feed/:userId', async (req, res) => {
+  try {
+    const feed = await getActivityFeed(req.params.userId)
+    res.json(feed)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
