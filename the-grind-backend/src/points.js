@@ -18,33 +18,20 @@ function calculatePoints(easy, medium, hard) {
 async function getWeeklyStatsForUser(userId) {
   const weekStart = getWeekStart()
 
-  const { data: baseline } = await supabase
-    .from('lc_snapshots')
-    .select('easy, medium, hard, total')
+  const { data: submissions, error } = await supabase
+    .from('lc_submissions')
+    .select('difficulty, submitted_at')
     .eq('user_id', userId)
-    .lt('snapped_at', weekStart.toISOString())
-    .order('snapped_at', { ascending: false })
-    .limit(1)
-    .single()
+    .gte('submitted_at', weekStart.toISOString())
 
-  const { data: current } = await supabase
-    .from('lc_snapshots')
-    .select('easy, medium, hard, total')
-    .eq('user_id', userId)
-    .order('snapped_at', { ascending: false })
-    .limit(1)
-    .single()
+  if (error || !submissions) return { easy: 0, medium: 0, hard: 0, points: 0 }
 
-  if (!current) return null
+  const easy = submissions.filter(s => s.difficulty === 'Easy').length
+  const medium = submissions.filter(s => s.difficulty === 'Medium').length
+  const hard = submissions.filter(s => s.difficulty === 'Hard').length
+  const points = calculatePoints(easy, medium, hard)
 
-  const base = baseline || { easy: 0, medium: 0, hard: 0 }
-
-  const weeklyEasy = Math.max(0, current.easy - base.easy)
-  const weeklyMedium = Math.max(0, current.medium - base.medium)
-  const weeklyHard = Math.max(0, current.hard - base.hard)
-  const points = calculatePoints(weeklyEasy, weeklyMedium, weeklyHard)
-
-  return { easy: weeklyEasy, medium: weeklyMedium, hard: weeklyHard, points }
+  return { easy, medium, hard, points }
 }
 
 async function getLeaderboard(userId = null) {
