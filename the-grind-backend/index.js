@@ -111,15 +111,6 @@ app.get('/friends/:userId/pending', async (req, res) => {
   }
 })
 
-app.get('/feed/:userId', async (req, res) => {
-  try {
-    const feed = await getActivityFeed(req.params.userId)
-    res.json(feed)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
-
 // ── Activity Feed ─────────────────────────────────────────────────
 app.get('/feed/:userId', async (req, res) => {
   try {
