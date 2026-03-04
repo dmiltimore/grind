@@ -23,7 +23,8 @@ app.get('/health', (req, res) => {
 // ── Leaderboard ───────────────────────────────────────────────────
 app.get('/leaderboard', async (req, res) => {
   try {
-    const leaderboard = await getLeaderboard()
+    const { userId } = req.query
+    const leaderboard = await getLeaderboard(userId || null)
     res.json(leaderboard)
   } catch (err) {
     res.status(500).json({ error: err.message })
