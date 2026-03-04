@@ -112,7 +112,6 @@ async function runWeeklyReset() {
 }
 
 async function getActivityFeed(userId) {
-  // Get user's friends + themselves
   const { data: friendships } = await supabase
     .from('friendships')
     .select('user_id, friend_id')
@@ -125,49 +124,33 @@ async function getActivityFeed(userId) {
 
   friendIds.push(userId)
 
-  // Get the two most recent snapshots for each user so we can compute deltas
-  const activities = []
+  // Get recent submissions for all friends + self
+  const { data: submissions } = await supabase
+    .from('lc_submissions')
+    .select('user_id, title, difficulty, submitted_at')
+    .in('user_id', friendIds)
+    .order('submitted_at', { ascending: false })
+    .limit(20)
 
-  for (const uid of friendIds) {
-    const { data: snapshots } = await supabase
-      .from('lc_snapshots')
-      .select('easy, medium, hard, total, snapped_at, user_id')
-      .eq('user_id', uid)
-      .order('snapped_at', { ascending: false })
-      .limit(2)
+  if (!submissions || submissions.length === 0) return []
 
-    if (!snapshots || snapshots.length < 2) continue
+  // Get usernames
+  const { data: users } = await supabase
+    .from('users')
+    .select('id, username')
+    .in('id', friendIds)
 
-    const [latest, previous] = snapshots
+  const usernameMap = {}
+  users?.forEach(u => { usernameMap[u.id] = u.username })
 
-    const deltaEasy = latest.easy - previous.easy
-    const deltaMedium = latest.medium - previous.medium
-    const deltaHard = latest.hard - previous.hard
-    const totalDelta = deltaEasy + deltaMedium + deltaHard
-
-    if (totalDelta <= 0) continue
-
-    // Get username
-    const { data: user } = await supabase
-      .from('users')
-      .select('username')
-      .eq('id', uid)
-      .single()
-
-    activities.push({
-      userId: uid,
-      username: user?.username,
-      deltaEasy,
-      deltaMedium,
-      deltaHard,
-      totalDelta,
-      points: calculatePoints(deltaEasy, deltaMedium, deltaHard),
-      snappedAt: latest.snapped_at
-    })
-  }
-
-  // Sort by most recent
-  return activities.sort((a, b) => new Date(b.snappedAt) - new Date(a.snappedAt))
+  return submissions.map(sub => ({
+    userId: sub.user_id,
+    username: usernameMap[sub.user_id],
+    title: sub.title,
+    difficulty: sub.difficulty,
+    points: sub.difficulty === 'Easy' ? 1 : sub.difficulty === 'Medium' ? 2 : 3,
+    submittedAt: sub.submitted_at
+  }))
 }
 
 module.exports = { getWeeklyStatsForUser, getLeaderboard, getWeekStart, runWeeklyReset, getActivityFeed }

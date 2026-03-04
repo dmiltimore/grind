@@ -148,24 +148,24 @@ export default function Dashboard({ profile }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '0.875rem', color: '#e8eaed' }}>
                     <strong>{item.userId === profile.id ? 'You' : item.username}</strong> solved{' '}
-                    {item.deltaEasy > 0 && (
-                      <span style={{ color: '#3ddc84', fontFamily: 'DM Mono', fontSize: '0.75rem', background: 'rgba(61,220,132,0.1)', padding: '2px 7px', borderRadius: '20px', marginRight: '4px' }}>
-                        +{item.deltaEasy} Easy
-                      </span>
-                    )}
-                    {item.deltaMedium > 0 && (
-                      <span style={{ color: '#ffb347', fontFamily: 'DM Mono', fontSize: '0.75rem', background: 'rgba(255,179,71,0.1)', padding: '2px 7px', borderRadius: '20px', marginRight: '4px' }}>
-                        +{item.deltaMedium} Medium
-                      </span>
-                    )}
-                    {item.deltaHard > 0 && (
-                      <span style={{ color: '#ef4444', fontFamily: 'DM Mono', fontSize: '0.75rem', background: 'rgba(239,68,68,0.1)', padding: '2px 7px', borderRadius: '20px', marginRight: '4px' }}>
-                        +{item.deltaHard} Hard
-                      </span>
-                    )}
+                    <span style={{
+                      color: item.difficulty === 'Easy' ? '#3ddc84' : item.difficulty === 'Medium' ? '#ffb347' : '#ef4444',
+                      fontWeight: 500
+                    }}>
+                      {item.title}
+                    </span>
                   </div>
-                  <div style={{ fontFamily: 'DM Mono', fontSize: '0.65rem', color: '#6b7280', marginTop: '3px' }}>
-                    {new Date(item.snappedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} · +{item.points} pts
+                  <div style={{ fontFamily: 'DM Mono', fontSize: '0.65rem', color: '#6b7280', marginTop: '3px', display: 'flex', gap: '10px' }}>
+                    <span style={{
+                      color: item.difficulty === 'Easy' ? '#3ddc84' : item.difficulty === 'Medium' ? '#ffb347' : '#ef4444',
+                      background: item.difficulty === 'Easy' ? 'rgba(61,220,132,0.1)' : item.difficulty === 'Medium' ? 'rgba(255,179,71,0.1)' : 'rgba(239,68,68,0.1)',
+                      padding: '2px 7px',
+                      borderRadius: '20px'
+                    }}>
+                      {item.difficulty}
+                    </span>
+                    <span>+{item.points} pts</span>
+                    <span>{new Date(item.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </div>
               </div>
@@ -173,6 +173,7 @@ export default function Dashboard({ profile }) {
           </div>
         </div>
       )}
+
     </div>
   )
 }
