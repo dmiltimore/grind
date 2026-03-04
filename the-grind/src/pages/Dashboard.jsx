@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react'
-import { getLeaderboard } from '../lib/api'
-import { supabase } from '../lib/supabase'
+import { getLeaderboard, getActivityFeed } from '../lib/api'
 
 export default function Dashboard({ profile }) {
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
   const [timeLeft, setTimeLeft] = useState('')
+  const [feed, setFeed] = useState([])
 
   useEffect(() => {
-    getLeaderboard()
+    getLeaderboard(profile.id)
       .then(data => setLeaderboard(data))
       .catch(err => console.error(err))
       .finally(() => setLoading(false))
 
-    // Countdown timer
+    getActivityFeed(profile.id)
+      .then(data => setFeed(data))
+      .catch(err => console.error(err))
+
     const interval = setInterval(() => {
       setTimeLeft(getTimeUntilReset())
     }, 1000)
@@ -79,7 +82,6 @@ export default function Dashboard({ profile }) {
         <p style={{ color: '#6b7280' }}>Loading...</p>
       ) : (
         <div style={{ background: '#16181c', border: '1px solid #2a2d35', borderRadius: '14px', overflow: 'hidden' }}>
-
           <div style={{
             display: 'grid',
             gridTemplateColumns: '40px 1fr 80px 80px 80px 90px',
@@ -115,6 +117,63 @@ export default function Dashboard({ profile }) {
           )}
         </div>
       )}
+
+      {/* Activity Feed */}
+      {feed.length > 0 && (
+        <div style={{ marginTop: '28px' }}>
+          <div style={{ fontFamily: 'Syne', fontSize: '1.1rem', fontWeight: 700, marginBottom: '16px' }}>
+            Recent Activity
+          </div>
+          <div style={{ background: '#16181c', border: '1px solid #2a2d35', borderRadius: '14px', overflow: 'hidden' }}>
+            {feed.map((item, index) => (
+              <div key={index} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '14px 20px',
+                borderBottom: index === feed.length - 1 ? 'none' : '1px solid #2a2d35'
+              }}>
+                <div style={{
+                  width: '30px', height: '30px',
+                  borderRadius: '50%',
+                  background: item.userId === profile.id
+                    ? 'linear-gradient(135deg, #fc4c02, #ffb347)'
+                    : 'linear-gradient(135deg, #6366f1, #4da6ff)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '0.65rem', fontWeight: 700, flexShrink: 0,
+                  fontFamily: 'Syne'
+                }}>
+                  {item.username?.slice(0, 2).toUpperCase()}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.875rem', color: '#e8eaed' }}>
+                    <strong>{item.userId === profile.id ? 'You' : item.username}</strong> solved{' '}
+                    {item.deltaEasy > 0 && (
+                      <span style={{ color: '#3ddc84', fontFamily: 'DM Mono', fontSize: '0.75rem', background: 'rgba(61,220,132,0.1)', padding: '2px 7px', borderRadius: '20px', marginRight: '4px' }}>
+                        +{item.deltaEasy} Easy
+                      </span>
+                    )}
+                    {item.deltaMedium > 0 && (
+                      <span style={{ color: '#ffb347', fontFamily: 'DM Mono', fontSize: '0.75rem', background: 'rgba(255,179,71,0.1)', padding: '2px 7px', borderRadius: '20px', marginRight: '4px' }}>
+                        +{item.deltaMedium} Medium
+                      </span>
+                    )}
+                    {item.deltaHard > 0 && (
+                      <span style={{ color: '#ef4444', fontFamily: 'DM Mono', fontSize: '0.75rem', background: 'rgba(239,68,68,0.1)', padding: '2px 7px', borderRadius: '20px', marginRight: '4px' }}>
+                        +{item.deltaHard} Hard
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontFamily: 'DM Mono', fontSize: '0.65rem', color: '#6b7280', marginTop: '3px' }}>
+                    {new Date(item.snappedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} · +{item.points} pts
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

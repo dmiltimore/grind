@@ -120,6 +120,16 @@ app.get('/feed/:userId', async (req, res) => {
   }
 })
 
+// ── Activity Feed ─────────────────────────────────────────────────
+app.get('/feed/:userId', async (req, res) => {
+  try {
+    const feed = await getActivityFeed(req.params.userId)
+    res.json(feed)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // ── Start Server ──────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {

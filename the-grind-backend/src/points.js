@@ -124,4 +124,63 @@ async function runWeeklyReset() {
   console.log('Weekly reset complete.')
 }
 
-module.exports = { getWeeklyStatsForUser, getLeaderboard, getWeekStart, runWeeklyReset }
+async function getActivityFeed(userId) {
+  // Get user's friends + themselves
+  const { data: friendships } = await supabase
+    .from('friendships')
+    .select('user_id, friend_id')
+    .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
+    .eq('status', 'accepted')
+
+  const friendIds = friendships?.map(f =>
+    f.user_id === userId ? f.friend_id : f.user_id
+  ) || []
+
+  friendIds.push(userId)
+
+  // Get the two most recent snapshots for each user so we can compute deltas
+  const activities = []
+
+  for (const uid of friendIds) {
+    const { data: snapshots } = await supabase
+      .from('lc_snapshots')
+      .select('easy, medium, hard, total, snapped_at, user_id')
+      .eq('user_id', uid)
+      .order('snapped_at', { ascending: false })
+      .limit(2)
+
+    if (!snapshots || snapshots.length < 2) continue
+
+    const [latest, previous] = snapshots
+
+    const deltaEasy = latest.easy - previous.easy
+    const deltaMedium = latest.medium - previous.medium
+    const deltaHard = latest.hard - previous.hard
+    const totalDelta = deltaEasy + deltaMedium + deltaHard
+
+    if (totalDelta <= 0) continue
+
+    // Get username
+    const { data: user } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', uid)
+      .single()
+
+    activities.push({
+      userId: uid,
+      username: user?.username,
+      deltaEasy,
+      deltaMedium,
+      deltaHard,
+      totalDelta,
+      points: calculatePoints(deltaEasy, deltaMedium, deltaHard),
+      snappedAt: latest.snapped_at
+    })
+  }
+
+  // Sort by most recent
+  return activities.sort((a, b) => new Date(b.snappedAt) - new Date(a.snappedAt))
+}
+
+module.exports = { getWeeklyStatsForUser, getLeaderboard, getWeekStart, runWeeklyReset, getActivityFeed }

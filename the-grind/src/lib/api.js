@@ -27,3 +27,7 @@ export const getFriends = (userId) =>
 
 export const getPendingRequests = (userId) =>
   api.get(`/friends/${userId}/pending`).then(r => r.data)
+
+// ── Activity Feed ──────────────────────────────────────────────────
+export const getActivityFeed = (userId) =>
+  api.get(`/feed/${userId}`).then(r => r.data)
