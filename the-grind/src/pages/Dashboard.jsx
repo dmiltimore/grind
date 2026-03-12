@@ -175,6 +175,9 @@ export default function Dashboard({ profile }) {
         </div>
       )}
 
+      {/* Progress Graph */}
+      <ProgressGraph profile={profile} />
+
     </div>
   )
 }
@@ -244,7 +247,6 @@ function LeaderboardRow({ user, isMe, isLast }) {
       <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.05rem', textAlign: 'right', color: isMe ? '#fc4c02' : '#e8eaed' }}>
         {user.points}
       </div>
-      <ProgressGraph profile={profile} />
     </div>
   )
 }
