@@ -31,3 +31,7 @@ export const getPendingRequests = (userId) =>
 // ── Activity Feed ──────────────────────────────────────────────────
 export const getActivityFeed = (userId) =>
   api.get(`/feed/${userId}`).then(r => r.data)
+
+// ── Submission History ──────────────────────────────────────────────────
+export const getSubmissionHistory = (userId, range = 'month') =>
+  api.get(`/submissions/${userId}?range=${range}`).then(r => r.data)

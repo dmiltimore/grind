@@ -122,6 +122,45 @@ app.get('/feed/:userId', async (req, res) => {
   }
 })
 
+// ── Submission History ──────────────────────────────────────────────────
+app.get('/submissions/:userId', async (req, res) => {
+  try {
+    const { range } = req.query // 'week' or 'month'
+    const userId = req.params.userId
+
+    const { data: friendships } = await supabase
+      .from('friendships')
+      .select('user_id, friend_id')
+      .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
+      .eq('status', 'accepted')
+
+    const friendIds = friendships?.map(f =>
+      f.user_id === userId ? f.friend_id : f.user_id
+    ) || []
+    friendIds.push(userId)
+
+    const since = new Date()
+    if (range === 'week') since.setDate(since.getDate() - 7)
+    else since.setDate(since.getDate() - 30)
+
+    const { data: submissions } = await supabase
+      .from('lc_submissions')
+      .select('user_id, submitted_at, difficulty')
+      .in('user_id', friendIds)
+      .gte('submitted_at', since.toISOString())
+      .order('submitted_at', { ascending: true })
+
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, username')
+      .in('id', friendIds)
+
+    res.json({ submissions, users })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // ── Start Server ──────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
