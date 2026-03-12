@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getLeaderboard, getActivityFeed } from '../lib/api'
+import ProgressGraph from '../components/ProgressGraph'
 
 export default function Dashboard({ profile }) {
   const [leaderboard, setLeaderboard] = useState([])
@@ -243,6 +244,7 @@ function LeaderboardRow({ user, isMe, isLast }) {
       <div style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '1.05rem', textAlign: 'right', color: isMe ? '#fc4c02' : '#e8eaed' }}>
         {user.points}
       </div>
+      <ProgressGraph profile={profile} />
     </div>
   )
 }
