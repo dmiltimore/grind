@@ -52,7 +52,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard profile={profile} />} />
           <Route path="/friends" element={<Friends profile={profile} />} />
-          <Route path="/profile" element={<Profile profile={profile} />} />
+          <Route path="/profile" element={<Profile profile={profile} onUpdate={() => fetchProfile(session.user.id)} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>

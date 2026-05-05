@@ -118,6 +118,11 @@ export default function ProgressGraph({ profile }) {
                 fontSize: '0.75rem'
               }}
               labelStyle={{ color: '#e8eaed', marginBottom: '4px' }}
+              formatter={(value, name) => {
+                const user = users.find(u => u.id === name)
+                const label = user?.id === profile.id ? 'you' : (user?.username || name)
+                return [value, label]
+              }}
             />
             <Legend
               wrapperStyle={{ fontFamily: 'DM Mono', fontSize: '0.7rem', paddingTop: '16px' }}

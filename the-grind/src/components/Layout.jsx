@@ -1,11 +1,27 @@
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+  return isMobile
+}
+
 export default function Layout({ children, profile }) {
+  const isMobile = useIsMobile()
+
+  if (isMobile) return <MobileLayout profile={profile}>{children}</MobileLayout>
+  return <DesktopLayout profile={profile}>{children}</DesktopLayout>
+}
+
+function DesktopLayout({ children, profile }) {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#0e0f11', color: '#e8eaed' }}>
-
-      {/* Sidebar */}
       <div style={{
         width: '240px',
         background: '#16181c',
@@ -16,7 +32,6 @@ export default function Layout({ children, profile }) {
         gap: '4px',
         flexShrink: 0
       }}>
-        {/* Logo */}
         <div style={{
           fontFamily: 'monospace',
           fontWeight: 800,
@@ -45,7 +60,6 @@ export default function Layout({ children, profile }) {
         <div style={{ padding: '9px 12px', color: '#4b5563', fontSize: '0.875rem' }}>🎤 Mock Interview</div>
         <div style={{ padding: '9px 12px', color: '#4b5563', fontSize: '0.875rem' }}>📄 Resume Workshop</div>
 
-        {/* User info */}
         <div style={{ flex: 1 }} />
         <div style={{
           padding: '12px',
@@ -67,9 +81,53 @@ export default function Layout({ children, profile }) {
         </div>
       </div>
 
-      {/* Main content */}
       <div style={{ flex: 1, padding: '32px 40px', overflowY: 'auto' }}>
         {children}
+      </div>
+    </div>
+  )
+}
+
+function MobileLayout({ children, profile }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0e0f11', color: '#e8eaed' }}>
+      {/* Top bar */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '16px 20px',
+        background: '#16181c',
+        borderBottom: '1px solid #2a2d35',
+        flexShrink: 0
+      }}>
+        <div style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.1rem', color: '#fc4c02' }}>
+          ⚡ The Grind
+        </div>
+        <div style={{ fontFamily: 'DM Mono', fontSize: '0.7rem', color: '#6b7280' }}>
+          @{profile?.username}
+        </div>
+      </div>
+
+      {/* Page content */}
+      <div style={{ flex: 1, padding: '24px 16px 88px', overflowY: 'auto' }}>
+        {children}
+      </div>
+
+      {/* Bottom tab bar */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: '#16181c',
+        borderTop: '1px solid #2a2d35',
+        display: 'flex',
+        zIndex: 100
+      }}>
+        <MobileTab to="/" icon="🏠" label="Dashboard" />
+        <MobileTab to="/friends" icon="👥" label="Friends" />
+        <MobileTab to="/profile" icon="👤" label="Profile" />
       </div>
     </div>
   )
@@ -91,6 +149,34 @@ function NavItem({ to, label }) {
         fontWeight: isActive ? 500 : 400
       })}
     >
+      {label}
+    </NavLink>
+  )
+}
+
+function MobileTab({ to, icon, label }) {
+  return (
+    <NavLink
+      to={to}
+      end
+      style={({ isActive }) => ({
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '10px 0 12px',
+        textDecoration: 'none',
+        color: isActive ? '#fc4c02' : '#6b7280',
+        fontSize: '0.65rem',
+        fontFamily: 'DM Mono',
+        letterSpacing: '0.04em',
+        gap: '4px',
+        borderTop: isActive ? '2px solid #fc4c02' : '2px solid transparent',
+        marginTop: '-1px'
+      })}
+    >
+      <span style={{ fontSize: '1.2rem' }}>{icon}</span>
       {label}
     </NavLink>
   )

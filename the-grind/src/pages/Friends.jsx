@@ -239,7 +239,16 @@ export default function Friends({ profile }) {
         {loading ? (
           <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Loading...</p>
         ) : friends.length === 0 ? (
-          <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>No friends yet — search for someone to add.</p>
+          <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '12px' }}>👥</div>
+            <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1rem', marginBottom: '8px' }}>
+              No friends yet
+            </div>
+            <div style={{ color: '#6b7280', fontSize: '0.8rem', lineHeight: 1.6 }}>
+              Search for someone by username above to send a friend request.<br />
+              Your weekly leaderboard includes everyone you add.
+            </div>
+          </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {friends.map(friend => (
