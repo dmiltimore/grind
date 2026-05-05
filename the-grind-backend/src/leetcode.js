@@ -122,7 +122,7 @@ async function syncUser(userId, leetcodeUsername) {
       }
     }))
 
-    const { error: subError } = await supabase
+    const { error: subError } = await supabase 
       .from('lc_submissions')
       .upsert(rows, { onConflict: 'user_id,submission_id' })
 
