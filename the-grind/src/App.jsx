@@ -6,6 +6,8 @@ import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import Friends from './pages/Friends'
 import Profile from './pages/Profile'
+import Jobs from './pages/Jobs'
+import Workshop from './pages/Workshop'
 import Layout from './components/Layout'
 
 export default function App() {
@@ -52,6 +54,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard profile={profile} />} />
           <Route path="/friends" element={<Friends profile={profile} />} />
+          <Route path="/jobs" element={<Jobs profile={profile} />} />
+          <Route path="/workshop" element={<Workshop profile={profile} />} />
           <Route path="/profile" element={<Profile profile={profile} onUpdate={() => fetchProfile(session.user.id)} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

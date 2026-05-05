@@ -44,6 +44,7 @@ function DesktopLayout({ children, profile }) {
 
         <NavItem to="/" label="🏠 Dashboard" />
         <NavItem to="/friends" label="👥 Friends" />
+        <NavItem to="/jobs" label="💼 Job Board" />
         <NavItem to="/profile" label="👤 Profile" />
 
         <div style={{
@@ -56,9 +57,8 @@ function DesktopLayout({ children, profile }) {
         }}>
           Coming Soon
         </div>
-        <div style={{ padding: '9px 12px', color: '#4b5563', fontSize: '0.875rem' }}>💼 Job Board</div>
+        <NavItem to="/workshop" label="📄 Resume Workshop" />
         <div style={{ padding: '9px 12px', color: '#4b5563', fontSize: '0.875rem' }}>🎤 Mock Interview</div>
-        <div style={{ padding: '9px 12px', color: '#4b5563', fontSize: '0.875rem' }}>📄 Resume Workshop</div>
 
         <div style={{ flex: 1 }} />
         <div style={{
@@ -127,6 +127,7 @@ function MobileLayout({ children, profile }) {
       }}>
         <MobileTab to="/" icon="🏠" label="Dashboard" />
         <MobileTab to="/friends" icon="👥" label="Friends" />
+        <MobileTab to="/jobs" icon="💼" label="Jobs" />
         <MobileTab to="/profile" icon="👤" label="Profile" />
       </div>
     </div>
